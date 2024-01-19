@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SharpPcap;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,6 +16,10 @@ using System.Windows.Shapes;
 
 using DataVis = System.Windows.Forms.DataVisualization;
 
+using System;
+using SharpPcap;
+using SharpPcap.LibPcap;
+
 namespace ActivityMonitor
 {
     /// <summary>
@@ -25,7 +30,7 @@ namespace ActivityMonitor
         public MainWindow()
         {
             InitializeComponent();
-            chart1.Series[0].Points.Add(3.0).AxisLabel = "Sample data";
+          
         }
     }
 }
