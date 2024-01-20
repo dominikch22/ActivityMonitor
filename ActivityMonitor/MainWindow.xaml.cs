@@ -31,40 +31,38 @@ namespace ActivityMonitor
     /// </summary>
     public partial class MainWindow : Window
     {
-        public ObservableCollection<DataPoint> DataPoints { get; set; }
+        private InputData InputData;
         public MainWindow()
         {
             InitializeComponent();
 
-            InputData inputData = new InputData();
+            InputData = new InputData();
 
-            KeyListener keyListener = new KeyListener(inputData);
+            KeyListener keyListener = new KeyListener(InputData);
             Thread thread = new Thread(keyListener.Run);
             thread.Start();
 
 
-            DataPoints = new ObservableCollection<DataPoint>
-            {
-                new DataPoint { X = 1, Y = 10 },
-                new DataPoint { X = 2, Y = 20 },
-                new DataPoint { X = 3, Y = 15 },
-                new DataPoint { X = 4, Y = 25 },
-            };
 
-            lock (inputData.LockObject) {
-                for (int i = 0; i < inputData.MouseMoves.Length; i++) {
-                    DataPoints.Add(new DataPoint { })
+
+
+          
+
+
+
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            lock (InputData.LockObject)
+            {
+                chart1.Series[0].Points.Clear();
+                for (int i = 0; i < InputData.MouseMoves.Length; i++)
+                {
+                    chart1.Series[0].Points.Add(InputData.MouseMoves[i] / 1000, i).AxisLabel = (i/60).ToString()+":"+(i%60).ToString();
+
                 }
             }
-
-            // Ustawianie źródła danych dla wykresu
-            LineSeries lineSeries = new LineSeries();
-            lineSeries.ItemsSource = DataPoints;
-
-            // Dodawanie wykresu do kontrolki Chart
-            chart.Series.Add(lineSeries);
-
-
         }
 
     }
