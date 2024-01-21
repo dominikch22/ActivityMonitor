@@ -34,10 +34,18 @@ namespace ActivityMonitor
         private InputData InputData;
         private ProgramsData ProgramsData;
         private HistoryData HistoryData;
+        private InputData SelectedInputData;
+        private ProgramsData SelectedProgramsData;
+        private HistoryData SelectedHistoryData;
         public MainWindow()
         {
             InitializeComponent();
             WindowState = WindowState.Maximized;
+            Closing += this.MainWindow_Closing;
+
+            DateTime currentDate = DateTime.Now;
+            string formattedDate = currentDate.ToString("dd-MM-yyyy");
+            LoadData(formattedDate);
 
             KeyListener keyListener = new KeyListener(InputData);
             Thread thread = new Thread(keyListener.Run);
@@ -47,26 +55,27 @@ namespace ActivityMonitor
             Thread activeProgramThread = new Thread(active.Run);
             activeProgramThread.Start();
 
+            HistoryData.loadTodayHistoryFromBrowser();
             CreateCalendar();
 
-            keyPressedChart.Series[0].Points.Clear();
-            mouseClickChart.Series[0].Points.Clear();
-            mouseDistanceChart.Series[0].Points.Clear();
-
           
-            for (int i = 0; i < InputData.MouseMoves.Length; i++)
-            {
-                keyPressedChart.Series[0].Points.Add(InputData.MouseMoves[i] / 1000, i).AxisLabel = (i / 60).ToString() + ":" + (i % 60).ToString();
-                mouseClickChart.Series[0].Points.Add(InputData.MouseMoves[i] / 1000, i).AxisLabel = (i / 60).ToString() + ":" + (i % 60).ToString();
-                mouseDistanceChart.Series[0].Points.Add(InputData.MouseMoves[i] / 1000, i).AxisLabel = (i / 60).ToString() + ":" + (i % 60).ToString();
 
-                domainsHistoryChart.Series[0].Points.Add(InputData.MouseMoves[i] / 1000, i).AxisLabel = (i / 60).ToString() + ":" + (i % 60).ToString();
-                ActiveProgramsChart.Series[0].Points.Add(InputData.MouseMoves[i] / 1000, i).AxisLabel = (i / 60).ToString() + ":" + (i % 60).ToString();
-            }
+            InputData.saveInputData();           
 
-            addEleentsToListBoxes();
             AddTitles();
 
+            loadInput(formattedDate);
+           
+
+        }
+
+        private void LoadData(string formattedDate)
+        {
+            
+
+            InputData = InputData.LoadDataByDate(formattedDate);
+            ProgramsData = ProgramsData.LaodProgramDataByDate(formattedDate);
+            HistoryData = HistoryData.LoadHistryDataByDate(formattedDate);
         }
 
         private void AddTitles() {
@@ -109,33 +118,60 @@ namespace ActivityMonitor
             inputButton.Background = Brushes.LightGray;
 
         }
-        private void addEleentsToListBoxes() {
-            for (int i = 1; i <= 100; i++)
-            {
-                ActiveProgramsList.Items.Add($"Item {i}");
-                DomainsHistory.Items.Add($"Item {i}");
-            }
-        }
+     
 
         private void Calendar_Click(object sender, RoutedEventArgs e)
         {
             ActivateInputData();
-            string formattedDate = ((Button)sender).ToolTip.ToString();
 
-            lock (InputData.LockObject)
+            string formattedDate = ((Button)sender).ToolTip.ToString();
+            loadInput(formattedDate);        
+        }
+
+        private void loadInput(string formattedDate) {
+            SelectedInputData = InputData.LoadDataByDate(formattedDate);
+            SelectedHistoryData = HistoryData.LoadHistryDataByDate(formattedDate);
+            SelectedProgramsData = ProgramsData.LaodProgramDataByDate(formattedDate);
+
+            keyPressedChart.Series[0].Points.Clear();
+            mouseClickChart.Series[0].Points.Clear();
+            mouseDistanceChart.Series[0].Points.Clear();
+
+            lock (SelectedInputData.LockObject)
             {
                 keyPressedChart.Series[0].Points.Clear();
                 mouseClickChart.Series[0].Points.Clear();
                 mouseDistanceChart.Series[0].Points.Clear();
-
-                for (int i = 0; i < InputData.MouseMoves.Length; i++)
+                for (int i = 0; i < SelectedInputData.MouseMoves.Length; i++)
                 {
-                    keyPressedChart.Series[0].Points.Add(InputData.MouseMoves[i] / 1000, i).AxisLabel = (i / 60).ToString() + ":" + (i % 60).ToString();
-                    mouseClickChart.Series[0].Points.Add(InputData.MouseMoves[i] / 1000, i).AxisLabel = (i / 60).ToString() + ":" + (i % 60).ToString();
-                    mouseDistanceChart.Series[0].Points.Add(InputData.MouseMoves[i] / 1000, i).AxisLabel = (i / 60).ToString() + ":" + (i % 60).ToString();
-
-
+                    mouseDistanceChart.Series[0].Points.Add(SelectedInputData.MouseMoves[i] / 1000, i).AxisLabel = (i / 60).ToString() + ":" + (i % 60).ToString();
+                    keyPressedChart.Series[0].Points.Add(SelectedInputData.KeysPressed[i], i).AxisLabel = (i / 60).ToString() + ":" + (i % 60).ToString();
+                    mouseClickChart.Series[0].Points.Add(SelectedInputData.MouseClicks[i], i).AxisLabel = (i / 60).ToString() + ":" + (i % 60).ToString();
                 }
+            }
+
+            DomainsHistory.Items.Clear();
+            foreach (KeyValuePair<string, HistoryElement> entry in SelectedHistoryData.DomainHistory) {
+                int count = 0;
+                foreach(KeyValuePair<int, int> nextEntry in entry.Value.history) {
+                    count += nextEntry.Value;
+                }
+                //DomainsHistory.Items.Add($"{entry.Key} : {count}");
+                DomainsHistory.Items.Add($"{entry.Key}");
+            }
+
+            ActiveProgramsList.Items.Clear();
+            foreach (KeyValuePair<string, List<int>> entry in SelectedProgramsData.ActiveProgramsHistory)
+            {
+                int count = 0;
+                int lastMinute = 0;
+                foreach (int minute in entry.Value)
+                {
+                    if (lastMinute != minute)
+                        count++;
+                }
+                //ActiveProgramsList.Items.Add($"{entry.Key} : {count}");
+                ActiveProgramsList.Items.Add($"{entry.Key}");
             }
         }
 
@@ -149,7 +185,7 @@ namespace ActivityMonitor
                 {
                     Button button = new Button
                     {
-                        Content = $"",
+                        Content = $"{dates[count].Substring(0,2)}",
                         Margin = new Thickness(2),
                         Width = 25,
                         Height = 25,
@@ -189,18 +225,50 @@ namespace ActivityMonitor
 
             if (DomainsHistory.SelectedItem != null)
             {
-                MessageBox.Show($"You clicked on: {DomainsHistory.SelectedItem.ToString()}");
+                Dictionary<int, int> domainHistory;
+                HistoryElement historyElement;
+                SelectedHistoryData.DomainHistory.TryGetValue(DomainsHistory.SelectedItem.ToString(), out historyElement);
+                domainHistory = historyElement.history;
+                domainsHistoryChart.Series[0].Points.Clear();
+                foreach (KeyValuePair<int, int> entry in domainHistory) {
+                    domainsHistoryChart.Series[0].Points.Add(entry.Value, entry.Key).AxisLabel = (entry.Key / 60).ToString() + ":" + (entry.Key % 60).ToString();
+                }
             }
         }
+
+
 
         private void ActiveProgramsList_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
             ActivateProgramsAndDomainData();
             if (ActiveProgramsList.SelectedItem != null)
             {
-                MessageBox.Show($"You clicked on: {ActiveProgramsList.SelectedItem.ToString()}");
+
+                List<int> programHistory;
+                SelectedProgramsData.ActiveProgramsHistory.TryGetValue(ActiveProgramsList.SelectedItem.ToString(), out programHistory);
+                ActiveProgramsChart.Series[0].Points.Clear();
+                for (int i = 0; i < 1440; i++) {
+                    ActiveProgramsChart.Series[0].Points.Add(0, i).AxisLabel = (i / 60).ToString() + ":" + (i % 60).ToString();
+                }
+                for (int i = 0; i < programHistory.Count(); i++) {
+                    ActiveProgramsChart.Series[0].Points.Add(1, programHistory[i]).AxisLabel = (programHistory[i] / 60).ToString() + ":" + (programHistory[i] % 60).ToString();
+                }
+
             }
         }
+        private void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            SaveData();
+            Environment.Exit(0);
+        }
+
+        private void SaveData()
+        {
+            InputData.saveInputData();
+            ProgramsData.SaveProgramsData();
+            HistoryData.SaveDomainsHistory();
+        }
+
 
     }
 }

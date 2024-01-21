@@ -61,7 +61,7 @@
             </StackPanel>
 
             <StackPanel Margin="5,0,10,0" Orientation="Vertical"  Grid.Row="1">
-                <Label Content="Używane programy" FontWeight="Bold"></Label>
+                <Label Content="Używane programy(czas w minutach)" FontWeight="Bold"></Label>
 
                 <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="360" >
                     <ListBox Name="ActiveProgramsList" SelectionChanged="ActiveProgramsList_SelectionChanged"/>
@@ -69,7 +69,7 @@
             </StackPanel>
 
             <StackPanel Margin="5,0,10,0" Orientation="Vertical"  Grid.Row="2">
-                <Label Content="Użyte domeny" FontWeight="Bold"></Label>
+                <Label Content="Użyte domeny(liczba odtworzeń)" FontWeight="Bold"></Label>
 
                 <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="360">
                     <ListBox Name="DomainsHistory" SelectionChanged="DomainsHistoryList_SelectionChanged"/>
@@ -82,7 +82,7 @@
 
        
 
-        <Grid Margin="0,10,0,10" Grid.Column="1" Grid.Row="0">
+        <Grid Margin="0,0,0,10" Grid.Column="1" Grid.Row="0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition/>
 
@@ -119,7 +119,7 @@
                 <WindowsFormsHost>
                     <wf:Chart x:Name="ActiveProgramsChart">
                         <wf:Chart.Series >
-                            <wf:Series ChartType="Line"/>
+                            <wf:Series ChartType="Line" BorderWidth="3"/>
                         </wf:Chart.Series>
                         <wf:Chart.ChartAreas>
                             <wf:ChartArea/>

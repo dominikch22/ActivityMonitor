@@ -33,7 +33,7 @@ namespace ActivityMonitor
                 string windowsTitle = getActiveWindowTitle();
                 ActiveProgramKey key = new ActiveProgramKey(programName, windowsTitle);
                 if (!windowsTitle.Equals(""))
-                    ProgramsData.addProgramActivity(key);
+                    ProgramsData.addProgramActivity(windowsTitle);
 
                 Thread.Sleep(5000);
             }
