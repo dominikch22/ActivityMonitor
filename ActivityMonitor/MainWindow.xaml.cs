@@ -237,7 +237,8 @@ namespace ActivityMonitor
                 SelectedHistoryData.DomainHistory.TryGetValue(item.AdditionalData, out historyElement);
                 domainHistory = historyElement.history;
                 domainsHistoryChart.Series[0].Points.Clear();
-                foreach (KeyValuePair<int, int> entry in domainHistory) {
+                var sortedHistory = domainHistory.OrderBy(pair => pair.Key);
+                foreach (KeyValuePair<int, int> entry in sortedHistory) {
                     domainsHistoryChart.Series[0].Points.Add(entry.Value, entry.Key).AxisLabel = (entry.Key / 60).ToString() + ":" + (entry.Key % 60).ToString();
                 }
             }
@@ -255,11 +256,18 @@ namespace ActivityMonitor
                 List<int> programHistory;
                 SelectedProgramsData.ActiveProgramsHistory.TryGetValue(item.AdditionalData, out programHistory);
                 ActiveProgramsChart.Series[0].Points.Clear();
+                List<int> points = new List<int>();
+               
                 for (int i = 0; i < 1440; i++) {
-                    ActiveProgramsChart.Series[0].Points.Add(0, i).AxisLabel = (i / 60).ToString() + ":" + (i % 60).ToString();
+                    points.Add(0);
                 }
                 for (int i = 0; i < programHistory.Count(); i++) {
-                    ActiveProgramsChart.Series[0].Points.Add(1, programHistory[i]).AxisLabel = (programHistory[i] / 60).ToString() + ":" + (programHistory[i] % 60).ToString();
+                    points[programHistory[i]] = 1;
+                    //ActiveProgramsChart.Series[0].Points.Add(1, programHistory[i]).AxisLabel = (programHistory[i] / 60).ToString() + ":" + (programHistory[i] % 60).ToString();
+                }
+
+                for (int i = 0; i < 1440; i++) {
+                    ActiveProgramsChart.Series[0].Points.Add(points[i], i).AxisLabel = (i / 60).ToString() + ":" + (i % 60).ToString();
                 }
 
             }
