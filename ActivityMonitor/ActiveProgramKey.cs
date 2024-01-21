@@ -17,6 +17,11 @@ namespace ActivityMonitor
             WindowTitle = windowTitle;
         }
 
+        public override string ToString()
+        {
+            return ProcessName + " : "+ WindowTitle;
+        }
+
         public override bool Equals(object obj)
         {
             return obj is ActiveProgramKey key &&
