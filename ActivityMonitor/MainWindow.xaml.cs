@@ -44,24 +44,68 @@ namespace ActivityMonitor
             thread.Start();
 
 
-            CreateCalender();
+            CreateCalendar();
 
             keyPressedChart.Series[0].Points.Clear();
             mouseClickChart.Series[0].Points.Clear();
             mouseDistanceChart.Series[0].Points.Clear();
+
+          
             for (int i = 0; i < InputData.MouseMoves.Length; i++)
             {
                 keyPressedChart.Series[0].Points.Add(InputData.MouseMoves[i] / 1000, i).AxisLabel = (i / 60).ToString() + ":" + (i % 60).ToString();
                 mouseClickChart.Series[0].Points.Add(InputData.MouseMoves[i] / 1000, i).AxisLabel = (i / 60).ToString() + ":" + (i % 60).ToString();
                 mouseDistanceChart.Series[0].Points.Add(InputData.MouseMoves[i] / 1000, i).AxisLabel = (i / 60).ToString() + ":" + (i % 60).ToString();
 
-
+                domainsHistoryChart.Series[0].Points.Add(InputData.MouseMoves[i] / 1000, i).AxisLabel = (i / 60).ToString() + ":" + (i % 60).ToString();
+                ActiveProgramsChart.Series[0].Points.Add(InputData.MouseMoves[i] / 1000, i).AxisLabel = (i / 60).ToString() + ":" + (i % 60).ToString();
             }
 
             addEleentsToListBoxes();
+            AddTitles();
 
         }
 
+        private void AddTitles() {
+            keyPressedChart.Titles.Add("Naciśnięte klawisze");
+            mouseClickChart.Titles.Add("Kliknięcia myszy");
+            mouseDistanceChart.Titles.Add("Dystans myszy");
+            domainsHistoryChart.Titles.Add("Czas użycia domeny");
+            ActiveProgramsChart.Titles.Add("Czas używania programu");
+        }
+
+        public void ActivateInputData() {
+            keyPressedGrid.Visibility = Visibility.Visible;
+            mouseClickGrid.Visibility = Visibility.Visible;
+            mouseDistanceGrid.Visibility = Visibility.Visible;
+
+            domainsHistoryGrid.Visibility = Visibility.Hidden;
+            ActiveProgramsGrid.Visibility = Visibility.Hidden;
+
+            inputButton.Background = Brushes.DeepSkyBlue;
+            historyButton.Background = Brushes.LightGray;
+        }
+
+        public void inputData_click(object sender, RoutedEventArgs e) {
+            ActivateInputData();
+        }
+
+        public void historyData_click(object sender, RoutedEventArgs e) {
+            ActivateProgramsAndDomainData();
+        }
+
+        public void ActivateProgramsAndDomainData() {
+            keyPressedGrid.Visibility = Visibility.Hidden;
+            mouseClickGrid.Visibility = Visibility.Hidden;
+            mouseDistanceGrid.Visibility = Visibility.Hidden;
+
+            domainsHistoryGrid.Visibility = Visibility.Visible;
+            ActiveProgramsGrid.Visibility = Visibility.Visible;
+
+            historyButton.Background = Brushes.DeepSkyBlue;
+            inputButton.Background = Brushes.LightGray;
+
+        }
         private void addEleentsToListBoxes() {
             for (int i = 1; i <= 100; i++)
             {
@@ -70,13 +114,17 @@ namespace ActivityMonitor
             }
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private void Calendar_Click(object sender, RoutedEventArgs e)
         {
+            ActivateInputData();
+            string formattedDate = ((Button)sender).ToolTip.ToString();
+
             lock (InputData.LockObject)
             {
                 keyPressedChart.Series[0].Points.Clear();
                 mouseClickChart.Series[0].Points.Clear();
                 mouseDistanceChart.Series[0].Points.Clear();
+
                 for (int i = 0; i < InputData.MouseMoves.Length; i++)
                 {
                     keyPressedChart.Series[0].Points.Add(InputData.MouseMoves[i] / 1000, i).AxisLabel = (i / 60).ToString() + ":" + (i % 60).ToString();
@@ -88,7 +136,7 @@ namespace ActivityMonitor
             }
         }
 
-        private void CreateCalender() {
+        private void CreateCalendar() {
             System.Windows.Controls.Grid calenderGrid = (System.Windows.Controls.Grid)this.FindName("CalenderGrid");
             List<string> dates = GenerateDates(60);
             int count = 59;
@@ -98,24 +146,20 @@ namespace ActivityMonitor
                 {
                     Button button = new Button
                     {
-                        Content = $" {row * 10 + col + 1}",
+                        Content = $"",
                         Margin = new Thickness(2),
                         Width = 25,
                         Height = 25,
                         Background = Brushes.White,
-                        ToolTip = dates[count],
-                        //HorizontalAlignment = HorizontalAlignment.Stretch,
-                        //VerticalAlignment = VerticalAlignment.Stretch
+                        ToolTip = dates[count],                      
                     };
                     count--;
 
                     System.Windows.Controls.Grid.SetRow(button, row);
                     System.Windows.Controls.Grid.SetColumn(button, col);
 
-                    // Attach an event handler if needed
-                    button.Click += Button_Click;
+                    button.Click += Calendar_Click;
 
-                    // Add the button to the grid
                     calenderGrid.Children.Add(button);
                 }
             }
@@ -138,7 +182,8 @@ namespace ActivityMonitor
 
         private void DomainsHistoryList_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
-            // Handle the selection change event here
+            ActivateProgramsAndDomainData();
+
             if (DomainsHistory.SelectedItem != null)
             {
                 MessageBox.Show($"You clicked on: {DomainsHistory.SelectedItem.ToString()}");
@@ -147,7 +192,7 @@ namespace ActivityMonitor
 
         private void ActiveProgramsList_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
-            // Handle the selection change event here
+            ActivateProgramsAndDomainData();
             if (ActiveProgramsList.SelectedItem != null)
             {
                 MessageBox.Show($"You clicked on: {ActiveProgramsList.SelectedItem.ToString()}");
