@@ -55,6 +55,10 @@ namespace ActivityMonitor
             Thread activeProgramThread = new Thread(active.Run);
             activeProgramThread.Start();
 
+            HistoryUpdator HistoryUpdator = new HistoryUpdator(HistoryData);
+            Thread HistoryUpdatorThread = new Thread(HistoryUpdator.Run);
+            HistoryUpdatorThread.Start();
+
             HistoryData.loadTodayHistoryFromBrowser();
             CreateCalendar();
 
@@ -64,7 +68,7 @@ namespace ActivityMonitor
 
             AddTitles();
 
-            loadInput(formattedDate);
+            loadDataIntoCharts(formattedDate);
            
 
         }
@@ -125,10 +129,10 @@ namespace ActivityMonitor
             ActivateInputData();
 
             string formattedDate = ((Button)sender).ToolTip.ToString();
-            loadInput(formattedDate);        
+            loadDataIntoCharts(formattedDate);        
         }
 
-        private void loadInput(string formattedDate) {
+        private void loadDataIntoCharts(string formattedDate) {
             SelectedInputData = InputData.LoadDataByDate(formattedDate);
             SelectedHistoryData = HistoryData.LoadHistryDataByDate(formattedDate);
             SelectedProgramsData = ProgramsData.LaodProgramDataByDate(formattedDate);
@@ -157,7 +161,8 @@ namespace ActivityMonitor
                     count += nextEntry.Value;
                 }
                 //DomainsHistory.Items.Add($"{entry.Key} : {count}");
-                DomainsHistory.Items.Add($"{entry.Key}");
+                ListBoxItemData item = new ListBoxItemData($"{entry.Key} : {count}", entry.Key);
+                DomainsHistory.Items.Add(item);
             }
 
             ActiveProgramsList.Items.Clear();
@@ -171,7 +176,8 @@ namespace ActivityMonitor
                         count++;
                 }
                 //ActiveProgramsList.Items.Add($"{entry.Key} : {count}");
-                ActiveProgramsList.Items.Add($"{entry.Key}");
+                ListBoxItemData item = new ListBoxItemData($"{entry.Key} : {count}", entry.Key);
+                ActiveProgramsList.Items.Add(item);
             }
         }
 
@@ -225,9 +231,10 @@ namespace ActivityMonitor
 
             if (DomainsHistory.SelectedItem != null)
             {
+                ListBoxItemData item = (ListBoxItemData)DomainsHistory.SelectedItem;
                 Dictionary<int, int> domainHistory;
                 HistoryElement historyElement;
-                SelectedHistoryData.DomainHistory.TryGetValue(DomainsHistory.SelectedItem.ToString(), out historyElement);
+                SelectedHistoryData.DomainHistory.TryGetValue(item.AdditionalData, out historyElement);
                 domainHistory = historyElement.history;
                 domainsHistoryChart.Series[0].Points.Clear();
                 foreach (KeyValuePair<int, int> entry in domainHistory) {
@@ -243,9 +250,10 @@ namespace ActivityMonitor
             ActivateProgramsAndDomainData();
             if (ActiveProgramsList.SelectedItem != null)
             {
+                ListBoxItemData item = (ListBoxItemData)ActiveProgramsList.SelectedItem;
 
                 List<int> programHistory;
-                SelectedProgramsData.ActiveProgramsHistory.TryGetValue(ActiveProgramsList.SelectedItem.ToString(), out programHistory);
+                SelectedProgramsData.ActiveProgramsHistory.TryGetValue(item.AdditionalData, out programHistory);
                 ActiveProgramsChart.Series[0].Points.Clear();
                 for (int i = 0; i < 1440; i++) {
                     ActiveProgramsChart.Series[0].Points.Add(0, i).AxisLabel = (i / 60).ToString() + ":" + (i % 60).ToString();

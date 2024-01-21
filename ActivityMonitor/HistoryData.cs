@@ -40,19 +40,19 @@ namespace ActivityMonitor
 
         private void loadHisotryFromEdge() {
             string webCachePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"Microsoft\Edge\User Data\Default\History");
-
+            string ticks = DateTime.Now.Ticks.ToString();
             try
             {
-                File.Copy(webCachePath, Application.StartupPath + "\\" + DateTime.Now.Ticks.ToString());
+                File.Copy(webCachePath, Application.StartupPath + "\\" + ticks);
                 string connectionString = $"Data Source={Application.StartupPath + "\\" + DateTime.Now.Ticks.ToString()};Version=3;";
 
 
                 //string query = $"SELECT url, last_visit_time FROM urls WHERE  last_visit_time >= strftime('%s', 'now', 'start of day')";
                 string query;
-                if(EdgeTimestamp == 0)
-                    query = $"SELECT url, last_visit_time FROM urls WHERE  last_visit_time >= strftime('%s', 'now', 'start of day')";
+                if (EdgeTimestamp == 0)
+                    query = $"SELECT url, last_visit_time FROM urls WHERE  last_visit_time >= strftime('%s', 'now', 'start of day') ORDER BY last_visit_time";
                 else
-                    query = $"SELECT url, last_visit_time FROM urls WHERE  last_visit_time >= {EdgeTimestamp}";
+                    query = $"SELECT url, last_visit_time FROM urls WHERE  last_visit_time >= {EdgeTimestamp} ORDER BY last_visit_time";
 
                 using (SQLiteConnection connection = new SQLiteConnection(connectionString))
                 {
@@ -68,8 +68,13 @@ namespace ActivityMonitor
                                 string url = reader["url"].ToString();
                                 string domain = new Uri(url).Host;
                                 long lastVisitTime = Convert.ToInt64(reader["last_visit_time"]);
-                                if (lastVisitTime > EdgeTimestamp) {
-                                    AddElementToHistory(lastVisitTime, domain);
+
+                                DateTime dt = new DateTime(1601, 01, 01).AddTicks(lastVisitTime * 10);
+                                DateTimeOffset dateTimeOffset = new DateTimeOffset(dt);
+                                long milli = dateTimeOffset.ToUnixTimeMilliseconds();
+                                if (lastVisitTime > EdgeTimestamp)
+                                {
+                                    AddElementToHistory(milli, domain);
                                     EdgeTimestamp = lastVisitTime;
                                 }
 
@@ -83,15 +88,20 @@ namespace ActivityMonitor
             {
                 Console.WriteLine($"An error occurred: {ex.Message}");
             }
+            finally {
+                File.Delete(Application.StartupPath + "\\" + ticks);
+            }
         }
         private void loadHistoryFromChrome() {
+
+            string ticks = DateTime.Now.Ticks.ToString();
             try
             {
                 string defaultPath = Path.Combine(
            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
            @"Google\Chrome\User Data\Default\History"
              );
-                File.Copy(defaultPath, Application.StartupPath + "\\" + DateTime.Now.Ticks.ToString());
+                File.Copy(defaultPath, Application.StartupPath + "\\" + ticks);
                 string connectionString = $"Data Source={Application.StartupPath + "\\" + DateTime.Now.Ticks.ToString()};Version=3;";
 
                 string path = Application.StartupPath + "\\" + DateTime.Now.Ticks.ToString();
@@ -106,10 +116,10 @@ namespace ActivityMonitor
                     long startOfTodayTimestamp = (long)(today - new DateTime(1970, 1, 1)).TotalMilliseconds * 1000;
 
                     string query;
-                    if(ChromeTimestamp == 0)
-                        query = $"SELECT url, last_visit_time FROM urls WHERE  last_visit_time >= strftime('%s', 'now', 'start of day')";
+                    if (ChromeTimestamp == 0)
+                        query = $"SELECT url, last_visit_time FROM urls WHERE  last_visit_time >= strftime('%s', 'now', 'start of day') ORDER BY last_visit_time";
                     else
-                        query = $"SELECT url, last_visit_time FROM urls WHERE  last_visit_time >= {ChromeTimestamp}";
+                        query = $"SELECT url, last_visit_time FROM urls WHERE  last_visit_time >= {ChromeTimestamp} ORDER BY last_visit_time";
 
                     using (SQLiteCommand command = new SQLiteCommand(query, connection))
                     {
@@ -122,8 +132,12 @@ namespace ActivityMonitor
                                 string x = reader["last_visit_time"].ToString();
                                 long lastVisitTime = Convert.ToInt64(reader["last_visit_time"]);
 
-                                if (lastVisitTime > ChromeTimestamp) {
-                                    AddElementToHistory(lastVisitTime, domain);
+                                DateTime dt = new DateTime(1601, 01, 01).AddTicks(lastVisitTime*10);
+                                DateTimeOffset dateTimeOffset = new DateTimeOffset(dt);
+                                long milli = dateTimeOffset.ToUnixTimeMilliseconds();
+                                if (lastVisitTime > ChromeTimestamp)
+                                {
+                                    AddElementToHistory(milli, domain);
                                     ChromeTimestamp = lastVisitTime;
                                 }
 
@@ -135,6 +149,9 @@ namespace ActivityMonitor
             catch (Exception ex)
             {
                 Console.WriteLine($"{ex.Message}");
+            }
+            finally {
+                File.Delete(Application.StartupPath + "\\" + ticks);
             }
         }
 
@@ -151,7 +168,7 @@ namespace ActivityMonitor
            // long startOfTodayTimestamp = (long)(today - new DateTime(1970, 1, 1)).TotalMilliseconds * 1000;
          
             //string query = $"SELECT url, title, last_visit_date FROM moz_places WHERE last_visit_date >= {startOfTodayTimestamp} ORDER BY last_visit_date DESC;";
-            string query = $"SELECT url, title, last_visit_date FROM moz_places WHERE last_visit_date >= {FirefoxTimestamp} ORDER BY last_visit_date DESC;";
+            string query = $"SELECT url, title, last_visit_date FROM moz_places WHERE last_visit_date >= {FirefoxTimestamp} ORDER BY last_visit_date;";
 
             try
             {

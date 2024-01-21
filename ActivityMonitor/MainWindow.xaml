@@ -64,7 +64,13 @@
                 <Label Content="Używane programy(czas w minutach)" FontWeight="Bold"></Label>
 
                 <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="360" >
-                    <ListBox Name="ActiveProgramsList" SelectionChanged="ActiveProgramsList_SelectionChanged"/>
+                    <ListBox Name="ActiveProgramsList" SelectionChanged="ActiveProgramsList_SelectionChanged">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding DisplayText}" Tag="{Binding AdditionalData}" />
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
                 </ScrollViewer>
             </StackPanel>
 
@@ -72,7 +78,13 @@
                 <Label Content="Użyte domeny(liczba odtworzeń)" FontWeight="Bold"></Label>
 
                 <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="360">
-                    <ListBox Name="DomainsHistory" SelectionChanged="DomainsHistoryList_SelectionChanged"/>
+                    <ListBox Name="DomainsHistory" SelectionChanged="DomainsHistoryList_SelectionChanged">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding DisplayText}" Tag="{Binding AdditionalData}" />
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
                 </ScrollViewer>
             </StackPanel>
           

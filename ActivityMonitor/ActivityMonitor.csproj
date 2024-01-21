@@ -121,8 +121,10 @@
     <Compile Include="GlobalInputListener.cs" />
     <Compile Include="HistoryData.cs" />
     <Compile Include="HistoryElement.cs" />
+    <Compile Include="HistoryUpdator.cs" />
     <Compile Include="InputData.cs" />
     <Compile Include="KeyListener.cs" />
+    <Compile Include="ListBoxItemData.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
