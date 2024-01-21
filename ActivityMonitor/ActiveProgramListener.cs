@@ -29,7 +29,7 @@ namespace ActivityMonitor
                 if (!programName.Equals(""))
                     ProgramsData.addProgramActivity(programName);
 
-                Thread.Sleep(3000);
+                Thread.Sleep(5000);
             }
         }
 
