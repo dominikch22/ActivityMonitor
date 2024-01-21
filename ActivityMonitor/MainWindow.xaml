@@ -7,29 +7,170 @@
         xmlns:local="clr-namespace:ActivityMonitor"
         mc:Ignorable="d"
         Title="Monitor Aktywności" Height="450" Width="1000">
-    <Grid>
+    <Grid x:Name="MainGrid">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition MinWidth="500"/>
+            <ColumnDefinition MinWidth="320" MaxWidth="320"/>
             <ColumnDefinition/>
 
         </Grid.ColumnDefinitions>
 
-        <Grid Margin="20,20,0,20" Grid.Column="0">
-            <WindowsFormsHost>
-                <wf:Chart x:Name="chart1">
-                    <wf:Chart.Series>
-                        <wf:Series ChartType="Line"/>
-                    </wf:Chart.Series>
-                    <wf:Chart.ChartAreas>
-                        <wf:ChartArea/>
-                    </wf:Chart.ChartAreas>
-                </wf:Chart>
-            </WindowsFormsHost>
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            
+        </Grid.RowDefinitions>
+
+
+        <Grid Background="#EFEFEF">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+
+            </Grid.ColumnDefinitions>
+
+            <Grid.RowDefinitions>
+                <RowDefinition MaxHeight="210"/>
+                <RowDefinition />
+                <RowDefinition />
+
+            </Grid.RowDefinitions>
+
+            <StackPanel Margin="5,0,10,0" Orientation="Vertical"  Grid.Row="0">
+                <Label Content="Kalendarz" FontWeight="Bold"></Label>
+
+                <Grid x:Name="CalenderGrid">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="30" />
+                        <RowDefinition Height="30" />
+                        <RowDefinition Height="30" />
+                        <RowDefinition Height="30" />
+                        <RowDefinition Height="30" />
+                        <RowDefinition Height="30" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                </Grid>
+            </StackPanel>
+
+            <StackPanel Margin="5,0,10,0" Orientation="Vertical"  Grid.Row="1">
+                <Label Content="Używane programy" FontWeight="Bold"></Label>
+
+                <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="360" >
+                    <ListBox Name="ActiveProgramsList" SelectionChanged="ActiveProgramsList_SelectionChanged"/>
+                </ScrollViewer>
+            </StackPanel>
+
+            <StackPanel Margin="5,0,10,0" Orientation="Vertical"  Grid.Row="2">
+                <Label Content="Użyte domeny" FontWeight="Bold"></Label>
+
+                <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="360">
+                    <ListBox Name="DomainsHistory" SelectionChanged="DomainsHistoryList_SelectionChanged"/>
+                </ScrollViewer>
+            </StackPanel>
+          
+        </Grid>
+        
+       
+
+       
+
+        <Grid Margin="0,10,0,10" Grid.Column="1" Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+
+            </Grid.ColumnDefinitions>
+
+            <Grid.RowDefinitions>
+                <RowDefinition Height="25"/>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+
+                
+            </Grid.RowDefinitions>
+            <StackPanel Margin="70,0,0,0" Orientation="Horizontal">
+                <Button FontWeight="Bold" x:Name="inputButton" Content="Wejście myszki klawiatury" Height="25" Click="inputData_click" Background="DeepSkyBlue" />
+                <Button FontWeight="Bold"  x:Name="historyButton" Content="Historia i aktywne programy" Height="25" Click="historyData_click" />
+            </StackPanel>
+
+
+            <Grid x:Name="keyPressedGrid" Margin="0,0,0,0" Grid.Column="0" Grid.Row="1">
+                <WindowsFormsHost>
+                    <wf:Chart x:Name="keyPressedChart">
+                        <wf:Chart.Series >
+                            <wf:Series ChartType="Line"/>
+                        </wf:Chart.Series>
+                        <wf:Chart.ChartAreas>
+                            <wf:ChartArea/>
+                        </wf:Chart.ChartAreas>
+                    </wf:Chart>
+                </WindowsFormsHost>
+            </Grid>
+
+            <Grid x:Name="ActiveProgramsGrid" Margin="0,0,0,0" Grid.Column="0" Grid.Row="1" Visibility="Hidden">
+                <WindowsFormsHost>
+                    <wf:Chart x:Name="ActiveProgramsChart">
+                        <wf:Chart.Series >
+                            <wf:Series ChartType="Line"/>
+                        </wf:Chart.Series>
+                        <wf:Chart.ChartAreas>
+                            <wf:ChartArea/>
+                        </wf:Chart.ChartAreas>
+                    </wf:Chart>
+                </WindowsFormsHost>
+            </Grid>
+
+            <Grid x:Name="mouseClickGrid" Margin="0,0,0,0" Grid.Column="0" Grid.Row="2">
+                <WindowsFormsHost>
+                    <wf:Chart x:Name="mouseClickChart">
+                        <wf:Chart.Series>
+                            <wf:Series ChartType="Line"/>
+                        </wf:Chart.Series>
+                        <wf:Chart.ChartAreas>
+                            <wf:ChartArea/>
+                        </wf:Chart.ChartAreas>
+                    </wf:Chart>
+                </WindowsFormsHost>
+            </Grid>
+
+            <Grid x:Name="domainsHistoryGrid" Margin="0,0,0,0" Grid.Column="0" Grid.Row="2"  Visibility="Hidden">
+                <WindowsFormsHost>
+                    <wf:Chart x:Name="domainsHistoryChart">
+                        <wf:Chart.Series>
+                            <wf:Series ChartType="Point"/>
+                        </wf:Chart.Series>
+                        <wf:Chart.ChartAreas>
+                            <wf:ChartArea/>
+                        </wf:Chart.ChartAreas>
+                    </wf:Chart>
+                </WindowsFormsHost>
+            </Grid>
+
+            <Grid x:Name="mouseDistanceGrid" Margin="0,0,0,0" Grid.Column="0" Grid.Row="3">
+                <WindowsFormsHost>
+                    <wf:Chart x:Name="mouseDistanceChart">
+                        <wf:Chart.Series>
+                            <wf:Series ChartType="Line"/>
+                        </wf:Chart.Series>
+                        <wf:Chart.ChartAreas>
+                            <wf:ChartArea/>
+                        </wf:Chart.ChartAreas>
+                    </wf:Chart>
+                </WindowsFormsHost>
+            </Grid>
         </Grid>
 
-        <Grid Grid.Column="1">
-            <Button Content="Button" HorizontalAlignment="Left" VerticalAlignment="Top" Width="75" Click="Button_Click"/>
-        </Grid>
+      
+
+
 
 
     </Grid>
