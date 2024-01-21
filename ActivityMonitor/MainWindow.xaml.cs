@@ -37,8 +37,8 @@ namespace ActivityMonitor
         public MainWindow()
         {
             InitializeComponent();
-            Closing += this.MainWindow_Closing;      
-
+            Closing += this.MainWindow_Closing;
+            LoadData();
 
             KeyListener keyListener = new KeyListener(InputData);
             Thread thread = new Thread(keyListener.Run);
@@ -82,9 +82,9 @@ namespace ActivityMonitor
         }
 
         private void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
-        {// Your code to handle closing event
-
-           
+        {
+            SaveData();
+            Environment.Exit(0);
         }
 
     }

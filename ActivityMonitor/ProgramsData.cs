@@ -51,19 +51,20 @@ namespace ActivityMonitor
         }
 
         public static ProgramsData LaodProgramDataByDate(string formattedDate) {
-            string path = Directory.GetCurrentDirectory() + "/data" + "/" + formattedDate + "/programsData.json";
-            string jsonContent = File.ReadAllText(path);
+           
 
             ProgramsData programsData;
             try
             {
+                string path = Directory.GetCurrentDirectory() + "/data" + "/" + formattedDate + "/programsData.json";
+                string jsonContent = File.ReadAllText(path);
                 programsData = JsonConvert.DeserializeObject<ProgramsData>(jsonContent);
             }
             catch (Exception e)
             {
                 Console.WriteLine(e.Message);
+                programsData = new ProgramsData();
             }
-            programsData = new ProgramsData();
 
 
             return programsData;

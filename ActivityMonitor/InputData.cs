@@ -82,17 +82,19 @@ namespace ActivityMonitor
         }
 
         public static InputData LoadDataByDate(string formattedDate) {
-            string path = Directory.GetCurrentDirectory() + "/data" + "/" + formattedDate + "/inputData.json";
-            string jsonContent = File.ReadAllText(path);
+           
 
             InputData inputData;
             try {
+                string path = Directory.GetCurrentDirectory() + "/data" + "/" + formattedDate + "/inputData.json";
+                string jsonContent = File.ReadAllText(path);
                 inputData = JsonConvert.DeserializeObject<InputData>(jsonContent);
             }
             catch (Exception e) {
                 Console.WriteLine(e.Message);
+                inputData = new InputData();
+
             }
-            inputData = new InputData();
 
 
             return inputData;
