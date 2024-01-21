@@ -32,15 +32,21 @@ namespace ActivityMonitor
     public partial class MainWindow : Window
     {
         private InputData InputData;
+        private ProgramsData ProgramsData;
         public MainWindow()
         {
             InitializeComponent();
 
             InputData = new InputData();
+            ProgramsData = new ProgramsData();
 
             KeyListener keyListener = new KeyListener(InputData);
             Thread thread = new Thread(keyListener.Run);
             thread.Start();
+
+            ActiveProgramListener active = new ActiveProgramListener(ProgramsData);
+            Thread activeProgramThread = new Thread(active.Run);
+            activeProgramThread.Start();
 
             HistoryData history = new HistoryData();
             history.loadTodayHistoryFromBrowser();
