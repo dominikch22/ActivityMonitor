@@ -42,13 +42,8 @@ namespace ActivityMonitor
             Thread thread = new Thread(keyListener.Run);
             thread.Start();
 
-
-
-
-
-          
-
-
+            HistoryData history = new HistoryData();
+            history.loadTodayHistoryFromBrowser();
 
         }
 
@@ -62,6 +57,7 @@ namespace ActivityMonitor
                     chart1.Series[0].Points.Add(InputData.MouseMoves[i] / 1000, i).AxisLabel = (i/60).ToString()+":"+(i%60).ToString();
 
                 }
+                InputData.saveInputData();
             }
         }
 
