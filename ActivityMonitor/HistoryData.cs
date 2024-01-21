@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
 using System.IO;
@@ -11,10 +12,21 @@ namespace ActivityMonitor
 {
     class HistoryData
     {
+        public long ChromeTimestamp;
+        public long FirefoxTimestamp;
+        public long EdgeTimestamp;
+
         public Dictionary<string, HistoryElement> DomainHistory;
 
         public HistoryData() {
             DomainHistory = new Dictionary<string, HistoryElement>();
+
+            DateTime today = DateTime.Now.Date;
+            FirefoxTimestamp = (long)(today - new DateTime(1970, 1, 1)).TotalMilliseconds * 1000;
+
+            ChromeTimestamp = (FirefoxTimestamp + 62135596800) * 1000000;
+            
+            EdgeTimestamp = (FirefoxTimestamp + 62135596800) * 1000000;
         }
 
         public void loadTodayHistoryFromBrowser() {
@@ -29,13 +41,12 @@ namespace ActivityMonitor
 
             try
             {
-                // Connection string for SQLite
                 File.Copy(webCachePath, Application.StartupPath + "\\" + DateTime.Now.Ticks.ToString());
                 string connectionString = $"Data Source={Application.StartupPath + "\\" + DateTime.Now.Ticks.ToString()};Version=3;";
 
-                // SQL query to get visited URLs from today with timestamps
 
-                string query = $"SELECT url, last_visit_time FROM urls WHERE  last_visit_time >= strftime('%s', 'now', 'start of day')";              
+                //string query = $"SELECT url, last_visit_time FROM urls WHERE  last_visit_time >= strftime('%s', 'now', 'start of day')";
+                string query = $"SELECT url, last_visit_time FROM urls WHERE  last_visit_time >= {EdgeTimestamp}";
 
                 using (SQLiteConnection connection = new SQLiteConnection(connectionString))
                 {
@@ -47,11 +58,15 @@ namespace ActivityMonitor
                         {
                             while (reader.Read())
                             {
+
                                 string url = reader["url"].ToString();
                                 string domain = new Uri(url).Host;
                                 long lastVisitTime = Convert.ToInt64(reader["last_visit_time"]);
+                                if (lastVisitTime > EdgeTimestamp) {
+                                    AddElementToHistory(lastVisitTime, domain);
+                                    EdgeTimestamp = lastVisitTime;
+                                }
 
-                                AddElementToHistory(lastVisitTime, domain);
 
                             }
                         }
@@ -70,7 +85,6 @@ namespace ActivityMonitor
            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
            @"Google\Chrome\User Data\Default\History"
              );
-                // Connection string for SQLite database
                 File.Copy(defaultPath, Application.StartupPath + "\\" + DateTime.Now.Ticks.ToString());
                 string connectionString = $"Data Source={Application.StartupPath + "\\" + DateTime.Now.Ticks.ToString()};Version=3;";
 
@@ -79,16 +93,15 @@ namespace ActivityMonitor
                 {
                     connection.Open();
 
-                    // Get the current date
                     string todayDate = DateTime.Now.ToString("yyyy-MM-dd");
 
-                    // Query to retrieve the browsing history for today
                     DateTime today = DateTime.Now.Date;
 
                     long startOfTodayTimestamp = (long)(today - new DateTime(1970, 1, 1)).TotalMilliseconds * 1000;
 
-                    string query = $"SELECT url, last_visit_time FROM urls WHERE  last_visit_time >= strftime('%s', 'now', 'start of day')";
-                    //string query = $"SELECT url, last_visit_time FROM urls";
+                    //string query = $"SELECT url, last_visit_time FROM urls WHERE  last_visit_time >= strftime('%s', 'now', 'start of day')";
+                    string query = $"SELECT url, last_visit_time FROM urls WHERE  last_visit_time >= {ChromeTimestamp}";
+
                     using (SQLiteCommand command = new SQLiteCommand(query, connection))
                     {
                         using (SQLiteDataReader reader = command.ExecuteReader())
@@ -99,11 +112,13 @@ namespace ActivityMonitor
                                 string domain = new Uri(url).Host;
                                 string x = reader["last_visit_time"].ToString();
                                 long lastVisitTime = Convert.ToInt64(reader["last_visit_time"]);
-                                //lastVisitTime = (long)(lastVisitTime - (new DateTime(1970, 1, 1) - new DateTime(1601, 1, 1)).TotalMilliseconds *1000);
-                               // DateTime dateTimeVar = new DateTime(1601, 1, 1).AddMilliseconds(lastVisitTime/1000);
 
+                                //1646723367
                                 lastVisitTime = lastVisitTime /1000000 - 11644473600;
-                                AddElementToHistory(lastVisitTime, domain);
+                                if (lastVisitTime > ChromeTimestamp) {
+                                    AddElementToHistory(lastVisitTime, domain);
+                                    ChromeTimestamp = lastVisitTime;
+                                }
 
                             }
                         }
@@ -121,7 +136,6 @@ namespace ActivityMonitor
             string fileName = "places.sqlite";
             string[] files = Directory.GetFiles(folderPath, fileName, SearchOption.AllDirectories);
 
-            //string firefoxHistoryPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) +  @"\Mozilla\Firefox\Profiles\kilchfst.default-release\places.sqlite";
             if (files.Length == 0)
                 return;
             string firefoxHistoryPath = files[0];
@@ -129,8 +143,8 @@ namespace ActivityMonitor
             DateTime today = DateTime.Now.Date;
             long startOfTodayTimestamp = (long)(today - new DateTime(1970, 1, 1)).TotalMilliseconds * 1000;
          
-            string query = $"SELECT url, title, last_visit_date FROM moz_places WHERE last_visit_date >= {startOfTodayTimestamp} ORDER BY last_visit_date DESC;";
-
+            //string query = $"SELECT url, title, last_visit_date FROM moz_places WHERE last_visit_date >= {startOfTodayTimestamp} ORDER BY last_visit_date DESC;";
+            string query = $"SELECT url, title, last_visit_date FROM moz_places WHERE last_visit_date >= {FirefoxTimestamp} ORDER BY last_visit_date DESC;";
 
             try
             {
@@ -148,8 +162,11 @@ namespace ActivityMonitor
                                 string url = reader["url"].ToString();
                                 string domain = new Uri(url).Host;
                                 long timestamp = Convert.ToInt64(reader["last_visit_date"]);
-                                AddElementToHistory(timestamp, domain);
-                             
+                                if (timestamp > FirefoxTimestamp) {
+                                    AddElementToHistory(timestamp, domain);
+                                    FirefoxTimestamp = timestamp;
+                                }
+
                             }
                         }
                     }
@@ -182,5 +199,45 @@ namespace ActivityMonitor
 
         }
 
+        public void SaveDomainsHistory()
+        {
+            string json = JsonConvert.SerializeObject(this);
+
+            DateTime currentDate = DateTime.Now;
+            string formattedDate = currentDate.ToString("dd-MM-yyyy");
+
+            string path = Directory.GetCurrentDirectory() + "/data" + "/" + formattedDate;
+            try
+            {
+                Directory.CreateDirectory(path);
+                File.WriteAllText(path + "/domainsHistory.json", json);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+
+        }
+
+        public static HistoryData LoadHistryDataByDate(string formattedDate) {
+            string path = Directory.GetCurrentDirectory() + "/data" + "/" + formattedDate + "/historyData.json";
+            string jsonContent = File.ReadAllText(path);
+
+            HistoryData historyData;
+            try
+            {
+                historyData = JsonConvert.DeserializeObject<HistoryData>(jsonContent);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+            historyData = new HistoryData();
+
+
+            return historyData;
+        }
+
+    
     }
 }

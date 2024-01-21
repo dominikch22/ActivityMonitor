@@ -33,12 +33,12 @@ namespace ActivityMonitor
     {
         private InputData InputData;
         private ProgramsData ProgramsData;
+        private HistoryData HistoryData;
         public MainWindow()
         {
             InitializeComponent();
+            Closing += this.MainWindow_Closing;      
 
-            InputData = new InputData();
-            ProgramsData = new ProgramsData();
 
             KeyListener keyListener = new KeyListener(InputData);
             Thread thread = new Thread(keyListener.Run);
@@ -48,9 +48,23 @@ namespace ActivityMonitor
             Thread activeProgramThread = new Thread(active.Run);
             activeProgramThread.Start();
 
-            HistoryData history = new HistoryData();
-            history.loadTodayHistoryFromBrowser();
+            HistoryData.loadTodayHistoryFromBrowser();
 
+        }
+
+        private void LoadData() {
+            DateTime currentDate = DateTime.Now;
+            string formattedDate = currentDate.ToString("dd-MM-yyyy");
+
+            InputData = InputData.LoadDataByDate(formattedDate);
+            ProgramsData = ProgramsData.LaodProgramDataByDate(formattedDate);
+            HistoryData = HistoryData.LoadHistryDataByDate(formattedDate);
+        }
+
+        private void SaveData() {
+            InputData.saveInputData();
+            ProgramsData.SaveProgramsData();
+            HistoryData.SaveDomainsHistory();
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
@@ -65,6 +79,12 @@ namespace ActivityMonitor
                 }
                 InputData.saveInputData();
             }
+        }
+
+        private void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {// Your code to handle closing event
+
+           
         }
 
     }

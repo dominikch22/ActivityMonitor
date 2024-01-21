@@ -82,7 +82,7 @@ namespace ActivityMonitor
         }
 
         public static InputData LoadDataByDate(string formattedDate) {
-            string path = Directory.GetCurrentDirectory() + "/data" + "/" + formattedDate;
+            string path = Directory.GetCurrentDirectory() + "/data" + "/" + formattedDate + "/inputData.json";
             string jsonContent = File.ReadAllText(path);
 
             InputData inputData;
