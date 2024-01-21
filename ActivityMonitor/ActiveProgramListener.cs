@@ -16,8 +16,12 @@ namespace ActivityMonitor
 
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
         private static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
- 
 
+        [DllImport("user32.dll", SetLastError = true)]
+        private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
+
+
+        
         private ProgramsData ProgramsData;
 
         public ActiveProgramListener(ProgramsData programsData) {
@@ -25,9 +29,11 @@ namespace ActivityMonitor
         }
         public void Run() {
             while (true) {
-                string programName = getActiveWindowTitle();
-                if (!programName.Equals(""))
-                    ProgramsData.addProgramActivity(programName);
+                string programName = GetActiveProgramName();
+                string windowsTitle = getActiveWindowTitle();
+                ActiveProgramKey key = new ActiveProgramKey(programName, windowsTitle);
+                if (!windowsTitle.Equals(""))
+                    ProgramsData.addProgramActivity(key);
 
                 Thread.Sleep(5000);
             }
@@ -44,6 +50,24 @@ namespace ActivityMonitor
             }
 
             return "";
+        }
+
+        public string GetActiveProgramName()
+        {
+            IntPtr handle = GetForegroundWindow();
+            uint processId;
+
+            GetWindowThreadProcessId(handle, out processId);
+
+            try
+            {
+                Process process = Process.GetProcessById((int)processId);
+                return process.ProcessName;
+            }
+            catch (ArgumentException)
+            {
+                return "Unable to retrieve the active program name.";
+            }
         }
     }
 }

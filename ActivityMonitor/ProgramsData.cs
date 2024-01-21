@@ -10,10 +10,10 @@ namespace ActivityMonitor
 {
     class ProgramsData
     {
-        public Dictionary<string, List<int>> ActiveProgramsHistory;
+        public Dictionary<ActiveProgramKey, List<int>> ActiveProgramsHistory;
 
         public ProgramsData() {
-            ActiveProgramsHistory = new Dictionary<string, List<int>>();
+            ActiveProgramsHistory = new Dictionary<ActiveProgramKey, List<int>>();
         }
 
         public int getCurrentMinute()
@@ -21,14 +21,14 @@ namespace ActivityMonitor
             DateTime currentTime = DateTime.Now;
             return currentTime.Hour * 60 + currentTime.Minute;
         }
-        public void addProgramActivity(string windowTitle) {
+        public void addProgramActivity(ActiveProgramKey key) {
             List<int> history;
-            if (ActiveProgramsHistory.ContainsKey(windowTitle)) {
-                ActiveProgramsHistory.TryGetValue(windowTitle, out history);
+            if (ActiveProgramsHistory.ContainsKey(key)) {
+                ActiveProgramsHistory.TryGetValue(key, out history);
                 history.Add(getCurrentMinute());
             }
             else {
-                ActiveProgramsHistory.Add(windowTitle, new List<int> { getCurrentMinute()});
+                ActiveProgramsHistory.Add(key, new List<int> { getCurrentMinute()});
             }
         }
 
