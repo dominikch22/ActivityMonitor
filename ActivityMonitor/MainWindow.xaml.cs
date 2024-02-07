@@ -37,6 +37,7 @@ namespace ActivityMonitor
         private InputData SelectedInputData;
         private ProgramsData SelectedProgramsData;
         private HistoryData SelectedHistoryData;
+        private Dictionary<string, int> SummorizedHistory;
         public MainWindow()
         {
             InitializeComponent();
@@ -60,9 +61,10 @@ namespace ActivityMonitor
             HistoryUpdatorThread.Start();
 
             HistoryData.loadTodayHistoryFromBrowser();
+            SummorizedHistory = InputData.SummorizeHisotry();
+
             CreateCalendar();
 
-          
 
             InputData.saveInputData();           
 
@@ -189,13 +191,20 @@ namespace ActivityMonitor
             {
                 for (int col = 0; col < 10; col++)
                 {
+                    int value = 1;
+                    SummorizedHistory.TryGetValue(dates[count], out value);
+                    int red = 255-value;
+                    int green = 255-value;
+                    int blue = 255;
+                    Color color = Color.FromRgb((byte)red, (byte)green, (byte)blue);
+                    SolidColorBrush solidColorBrush = new SolidColorBrush(color);
                     Button button = new Button
                     {
                         Content = $"{dates[count].Substring(0,2)}",
                         Margin = new Thickness(2),
                         Width = 25,
                         Height = 25,
-                        Background = Brushes.White,
+                        Background = solidColorBrush,
                         ToolTip = dates[count],                      
                     };
                     count--;

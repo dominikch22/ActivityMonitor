@@ -81,6 +81,31 @@ namespace ActivityMonitor
             }
         }
 
+        public static Dictionary<string, int> SummorizeHisotry() {
+            Dictionary<string, int> summorizedHistory = new Dictionary<string, int>();
+            string path = Directory.GetCurrentDirectory()+"\\data";
+            foreach (string dir in Directory.GetDirectories(path)) {
+                string jsonConent = File.ReadAllText(dir+"\\inputData.json");
+                InputData inputData = JsonConvert.DeserializeObject<InputData>(jsonConent);
+                summorizedHistory.Add(Path.GetFileName(dir), CalculateValue(inputData));
+            }
+
+            return summorizedHistory;
+        }
+
+        public static int CalculateValue(InputData inputData) {
+            int value = 0;
+            for (int i = 0; i < inputData.MouseClicks.Length; i++) {
+                value += inputData.MouseClicks[i];
+                value += inputData.KeysPressed[i] * 2;
+                value += inputData.MouseMoves[i] / 10;
+            }
+
+            return value;
+        }
+
+
+
         public static InputData LoadDataByDate(string formattedDate) {
            
 
